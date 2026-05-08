@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Potato Disease Classification</title>
+
+  <style>
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body{
+      background:#f4f7fb;
+      min-height:100vh;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      padding:30px;
+    }
+
+    .container{
+      width:900px;
+      background:white;
+      border-radius:15px;
+      padding:30px;
+      box-shadow:0 10px 30px rgba(0,0,0,0.1);
+    }
+
+    h1{
+      text-align:center;
+      margin-bottom:25px;
+      color:#2c3e50;
+    }
+
+    .upload-section{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:15px;
+      margin-bottom:30px;
+    }
+
+    input[type="file"]{
+      padding:10px;
+      border:2px dashed #3498db;
+      border-radius:10px;
+      width:100%;
+      cursor:pointer;
+    }
+
+    button{
+      padding:12px 25px;
+      border:none;
+      background:#3498db;
+      color:white;
+      border-radius:10px;
+      cursor:pointer;
+      font-size:16px;
+      transition:0.3s;
+    }
+
+    button:hover{
+      background:#2980b9;
+    }
+
+    .preview{
+      text-align:center;
+      margin-bottom:25px;
+    }
+
+    .preview img{
+      max-width:300px;
+      border-radius:10px;
+      border:3px solid #ddd;
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      margin-top:20px;
+    }
+
+    table thead{
+      background:#3498db;
+      color:white;
+    }
+
+    table th,
+    table td{
+      padding:15px;
+      text-align:center;
+      border:1px solid #ddd;
+    }
+
+    table tbody tr:nth-child(even){
+      background:#f9f9f9;
+    }
+
+    .filename{
+      margin-top:15px;
+      text-align:center;
+      color:#555;
+      font-weight:bold;
+    }
+
+    .loading{
+      text-align:center;
+      margin-top:15px;
+      color:#e67e22;
+      font-weight:bold;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+
+    <h1>🥔 Potato Disease Classification</h1>
+
+    <div class="upload-section">
+      <input type="file" id="imageInput" accept="image/*">
+      <button onclick="uploadImage()">Predict Disease</button>
+    </div>
+
+    <div class="preview">
+      <img id="previewImage" src="" alt="" style="display:none;">
+    </div>
+
+    <div class="loading" id="loading"></div>
+
+    <div class="filename" id="filename"></div>
+
+    <table id="resultTable" style="display:none;">
+      <thead>
+        <tr>
+          <th>Model Name</th>
+          <th>Predicted Class</th>
+          <th>Confidence</th>
+        </tr>
+      </thead>
+
+      <tbody id="tableBody">
+
+      </tbody>
+    </table>
+
+  </div>
+
+  <script>
+
+    const imageInput = document.getElementById("imageInput");
+    const previewImage = document.getElementById("previewImage");
+
+    imageInput.addEventListener("change", function() {
+
+      const file = this.files[0];
+
+      if(file){
+        previewImage.src = URL.createObjectURL(file);
+        previewImage.style.display = "block";
+      }
+
+    });
+
+    async function uploadImage(){
+
+      const file = imageInput.files[0];
+
+      if(!file){
+        alert("Please select an image");
+        return;
+      }
+
+      document.getElementById("loading").innerText = "Predicting...";
+      document.getElementById("resultTable").style.display = "none";
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      try{
+
+        const response = await fetch("http://localhost:8000/predict", {
+          method:"POST",
+          body:formData
+        });
+
+        const data = await response.json();
+
+        console.log(data);
+
+        document.getElementById("loading").innerText = "";
+
+        document.getElementById("filename").innerText =
+          "Filename: " + data.filename;
+
+        const tableBody = document.getElementById("tableBody");
+        tableBody.innerHTML = "";
+
+        for(const modelName in data.predictions){
+
+          const prediction = data.predictions[modelName];
+
+          const row = `
+            <tr>
+              <td>${modelName}</td>
+              <td>${prediction.predicted_class}</td>
+              <td>${prediction.confidence}</td>
+            </tr>
+          `;
+
+          tableBody.innerHTML += row;
+        }
+
+        document.getElementById("resultTable").style.display = "table";
+
+      }catch(error){
+
+        console.error(error);
+        document.getElementById("loading").innerText = "API Error!";
+      }
+
+    }
+
+  </script>
+
+</body>
+</html>
