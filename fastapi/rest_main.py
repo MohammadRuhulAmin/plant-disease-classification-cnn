@@ -16,7 +16,8 @@ app.add_middleware(
 
 MODEL_PATHS = {
     "TR_SE_NET": "/mnt/c/development/Thesis/PotatoDiseaseClassification-CNN/models/plant_tr_se_net_v1.keras",
-    "CNN_Baseline": "/mnt/c/development/Thesis/PotatoDiseaseClassification-CNN/models/model_v101.keras" 
+    "CNN_Baseline": "/mnt/c/development/Thesis/PotatoDiseaseClassification-CNN/models/model_v101.keras",
+    "Parallel Depthwise(PD)CNN":"/mnt/c/development/Thesis/PotatoDiseaseClassification-CNN/models/Parallel_CNN_v1.keras" 
 }
 
 models = {}
